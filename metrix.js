@@ -1,8 +1,24 @@
 const playerCells = document.querySelectorAll('.player-cell');
 
+const cache = new Map(Object.entries(JSON.parse(localStorage.getItem('ratingsCache') || '{}')));
+
+const CACHE_EXPIRATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function appendRatingToCell(playerCell, metrixRating) {
+    const ratingSpan = document.createElement('span');
+    ratingSpan.textContent = ` (${metrixRating})`;
+    playerCell.appendChild(ratingSpan);
+}
+
 playerCells.forEach(async playerCell => {
     const profileLink = playerCell.querySelector('a.profile-link');
     if (profileLink) {
+        const cachedData = cache.get(profileLink.href);
+        if (cachedData && (Date.now() - cachedData.timestamp < CACHE_EXPIRATION_MS)) {
+            appendRatingToCell(playerCell, cachedData.rating);
+            return;
+        }
+
         try {
             const response = await fetch(profileLink.href);
             if (!response.ok) {
@@ -18,9 +34,9 @@ playerCells.forEach(async playerCell => {
 
             if (spanElement) {
                 const metrixRating = spanElement.textContent.trim();
-                const ratingSpan = document.createElement('span');
-                ratingSpan.textContent = ` (${metrixRating})`;
-                playerCell.appendChild(ratingSpan);
+                cache.set(profileLink.href, { rating: metrixRating, timestamp: Date.now() });
+                localStorage.setItem('ratingsCache', JSON.stringify(Object.fromEntries(cache)));
+                appendRatingToCell(playerCell, metrixRating);
             } else {
                 console.error('No <span> element found inside div.metrix-rating.');
             }
