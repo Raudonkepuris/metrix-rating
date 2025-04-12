@@ -10,7 +10,7 @@ function appendRatingToCell(playerCell, metrixRating) {
     playerCell.appendChild(ratingSpan);
 }
 
-playerCells.forEach(async playerCell => {
+async function processPlayerCell(playerCell) {
     const profileLink = playerCell.querySelector('a.profile-link');
     if (profileLink) {
         const cachedData = cache.get(profileLink.href);
@@ -46,4 +46,8 @@ playerCells.forEach(async playerCell => {
     } else {
         console.error('No <a> element with class "profile-link" found in this player-cell.');
     }
-});
+}
+
+(async () => {
+    await Promise.all(Array.from(playerCells).map(processPlayerCell));
+})();
