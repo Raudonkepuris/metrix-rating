@@ -8,7 +8,8 @@
     "content_scripts": [
       {
         "matches": ["*://discgolfmetrix.com/*"],
-        "js": ["metrix.js"]
+        "js": ["metrix.js"],
+        "css": ["styles.css"]
       }
     ]
   }

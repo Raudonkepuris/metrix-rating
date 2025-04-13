@@ -20,18 +20,17 @@ function appendRatingToCell(playerCell, metrixRating, popupContent) {
     popup.style.border = '1px solid #ccc';
     popup.style.padding = '10px';
     popup.style.zIndex = '1000';
-    popup.style.width = '1100px'; // Set the width of the popup
     document.body.appendChild(popup);
 
-    // Show popup on hover
-    ratingSpan.addEventListener('mouseenter', (event) => {
+    // Show popup on hover over the player-cell
+    playerCell.addEventListener('mouseenter', (event) => {
         popup.style.display = 'block';
         popup.style.left = `${event.pageX + 10}px`;
         popup.style.top = `${event.pageY - popup.offsetHeight - 10}px`; // Position above the mouse
     });
 
-    // Hide popup when not hovering
-    ratingSpan.addEventListener('mouseleave', () => {
+    // Hide popup when not hovering over the player-cell
+    playerCell.addEventListener('mouseleave', () => {
         popup.style.display = 'none';
     });
 }

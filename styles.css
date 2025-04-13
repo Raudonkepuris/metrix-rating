@@ -1,0 +1,29 @@
+.rating-popup {
+    max-width: 90%; /* Ensure the popup doesn't exceed the screen width */
+    width: 1000px; /* Default width */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    gap: 10px; /* Add spacing between elements */
+}
+
+.rating-popup .popup-content > * {
+    margin-bottom: 10px; /* Add spacing between child elements */
+}
+
+@media (max-width: 768px) {
+    .rating-popup {
+        width: 300px; /* Adjust width for tablets */
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .rating-popup {
+        width: 90%; /* Use most of the screen width for small devices */
+        padding: 5px;
+    }
+}
