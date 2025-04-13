@@ -4,10 +4,36 @@ const cache = new Map(Object.entries(JSON.parse(localStorage.getItem('ratingsCac
 
 const CACHE_EXPIRATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-function appendRatingToCell(playerCell, metrixRating) {
+function appendRatingToCell(playerCell, metrixRating, popupContent) {
     const ratingSpan = document.createElement('span');
     ratingSpan.textContent = ` (${metrixRating})`;
+    ratingSpan.classList.add('rating-span');
     playerCell.appendChild(ratingSpan);
+
+    // Create the popup
+    const popup = document.createElement('div');
+    popup.classList.add('rating-popup');
+    popup.innerHTML = popupContent;
+    popup.style.display = 'none';
+    popup.style.position = 'absolute';
+    popup.style.backgroundColor = 'white';
+    popup.style.border = '1px solid #ccc';
+    popup.style.padding = '10px';
+    popup.style.zIndex = '1000';
+    popup.style.width = '1100px'; // Set the width of the popup
+    document.body.appendChild(popup);
+
+    // Show popup on hover
+    ratingSpan.addEventListener('mouseenter', (event) => {
+        popup.style.display = 'block';
+        popup.style.left = `${event.pageX + 10}px`;
+        popup.style.top = `${event.pageY - popup.offsetHeight - 10}px`; // Position above the mouse
+    });
+
+    // Hide popup when not hovering
+    ratingSpan.addEventListener('mouseleave', () => {
+        popup.style.display = 'none';
+    });
 }
 
 async function processPlayerCell(playerCell) {
@@ -15,7 +41,7 @@ async function processPlayerCell(playerCell) {
     if (profileLink) {
         const cachedData = cache.get(profileLink.href);
         if (cachedData && (Date.now() - cachedData.timestamp < CACHE_EXPIRATION_MS)) {
-            appendRatingToCell(playerCell, cachedData.rating);
+            appendRatingToCell(playerCell, cachedData.rating, cachedData.popupContent);
             return;
         }
 
@@ -31,14 +57,22 @@ async function processPlayerCell(playerCell) {
             const doc = parser.parseFromString(html, 'text/html');
             const metrixRatingDiv = doc.querySelector('div.metrix-rating');
             const spanElement = metrixRatingDiv?.querySelector('span');
+            const profileCover = doc.querySelector('#content .profile-cover');
+            const profileStats = doc.querySelector('#content .profile-stats');
 
-            if (spanElement) {
+            if (spanElement && profileCover && profileStats) {
                 const metrixRating = spanElement.textContent.trim();
-                cache.set(profileLink.href, { rating: metrixRating, timestamp: Date.now() });
+                const popupContent = `
+                    <div class="popup-content">
+                        ${profileCover.outerHTML}
+                        ${profileStats.outerHTML}
+                    </div>
+                `;
+                cache.set(profileLink.href, { rating: metrixRating, popupContent, timestamp: Date.now() });
                 localStorage.setItem('ratingsCache', JSON.stringify(Object.fromEntries(cache)));
-                appendRatingToCell(playerCell, metrixRating);
+                appendRatingToCell(playerCell, metrixRating, popupContent);
             } else {
-                console.error('No <span> element found inside div.metrix-rating.');
+                console.error('Required elements not found in the fetched page.');
             }
         } catch (error) {
             console.error(`Error fetching or parsing ${profileLink.href}:`, error);
